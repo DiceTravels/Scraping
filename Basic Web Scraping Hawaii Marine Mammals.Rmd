@@ -1,0 +1,64 @@
+---
+title: "Basic Web Scraping NOAA Marine Mammals Hawaii"
+author: "Isaac Simonelli"
+date: "2/8/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+
+# For general data science
+library(tidyverse)
+
+# For scraping
+library(rvest)
+
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+## Identify the website
+
+
+The first step is identifying the website we're going to pull from. For the sake of using a table that's pretty straightfoward and simple, we're going to look at the NOAA marine protected species in Hawaii.
+
+```{r pdf}
+
+link = "https://www.fisheries.noaa.gov/pacific-islands/endangered-species-conservation/marine-protected-species-hawaiian-islands"
+page = read_html (link)
+
+```
+
+
+## Identifying the nodules
+
+We're going to use the SelectorGadget extension in Chrome to idnetify the html_nodes that coorisponde to the sections of the chart we're interested in.
+
+```{r}
+
+common_name = page %>% html_nodes ("td:nth-child(1)") %>% html_text ()
+scientific_name = page %>% html_nodes ("em") %>% html_text ()
+esa_listing_status = page %>% html_nodes ("#critical-habitat+ table em , td~ td+ td") %>% html_text ()
+
+```
+
+When we look at each of these objects, we'll realize that esa_listing_status only have 15 rows while the other two columns have 15 rows. So we need to pad the values in esa-listing status.
+
+
+```{r}
+
+length(esa_listing_status) <-length(common_name)
+```
+
+
+## Creating a dataframe
+
+Now, we can create the dataframe to be used in analysis.
+
+```{r}
+
+table = data.frame(common_name, scientific_name, esa_listing_status)
+
+```
+
+
